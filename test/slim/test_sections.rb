@@ -92,18 +92,47 @@ li
   == link_to("Users", users_path)
 }
 
-    hash = {:person => Person.new("Joe")}
-
     assert_html '<li><a href="/">Home</a></li><li><a href="/users">Users</a></li>', source, :scope => ViewEnv.new, :sections => true, :dictionary_access => :method
   end
 
-
-  def test_collection_iteration
+  def test_collection_iteration_method_access_wrapped
     source = %q{
 - people
  p = name
 }
 
-    assert_html '<p>Andy</p><p>Fred</p><p>Daniel</p>', source, :scope => ViewEnv.new, :sections => true, :dictionary_access => :method
+    assert_html '<p>Andy</p><p>Fred</p><p>Daniel</p>', source, :scope => ViewEnv.new,
+    :sections => true, :dictionary_access => :method, :wrap_dictionary => true
+  end
+
+  def test_collection_iteration_method_access_unwrapped
+    source = %q{
+- people
+ p = name
+}
+
+    assert_html '<p>Andy</p><p>Fred</p><p>Daniel</p>', source, :scope => ViewEnv.new,
+    :sections => true, :dictionary_access => :method, :wrap_dictionary => false
+  end
+
+  def test_collection_iteration_string_access
+    source = %q{
+- people
+ p = name
+}
+
+    assert_html '<p>Andy</p><p>Fred</p><p>Daniel</p>', source, :scope => ViewEnv.new,
+    :sections => true, :dictionary_access => :string
+  end
+
+
+  def test_collection_iteration_symbol_access
+    source = %q{
+- people
+ p = name
+}
+
+    assert_html '<p>Andy</p><p>Fred</p><p>Daniel</p>', source, :scope => ViewEnv.new,
+    :sections => true, :dictionary_access => :symbol
   end
 end

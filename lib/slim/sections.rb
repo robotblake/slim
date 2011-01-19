@@ -6,7 +6,8 @@ module Slim
     # dictionary_access is not used if dictionary_type == :object
     set_default_options :dictionary => 'self',
                         :sections => false,
-                        :dictionary_access => :method # :symbol, :string, :method
+                        :dictionary_access => :symbol, # :symbol, :string, :method
+                        :wrap_dictionary => true
 
     def initialize(opts = {})
       super
@@ -19,6 +20,8 @@ module Slim
     def compile(exp)
       if options[:sections]
         # Store the dictionary in the _slimdict variable
+        dictionary = options[:dictionary]
+        dictionary = "Slim::Wrapper.new(#{dictionary})" if options[:wrap_dictionary]
         [:multi,
          [:block, "_slimdict = #{dictionary}"],
          super]
@@ -54,6 +57,7 @@ module Slim
        [:block,   "if #{tmp1} == true"],
                      content,
        [:block,   'else'],
+                    # Wrap map in array because maps implement each
        [:block,     "#{tmp1} = [#{tmp1}] if #{tmp1}.respond_to?(:has_key?) || !#{tmp1}.respond_to?(:map)"],
        [:block,     "#{tmp2} = _slimdict"],
        [:block,     "#{tmp1}.each do |_slimdict|"],
@@ -69,6 +73,8 @@ module Slim
       [:slim, :output, escape, access(name), content]
     end
 
+    private
+
     def access(name)
       return name if name == 'yield'
       case options[:dictionary_access]
@@ -78,14 +84,6 @@ module Slim
         "_slimdict[#{name.to_s.inspect}]"
       else
         "_slimdict[#{name.to_sym.inspect}]"
-      end
-    end
-
-    def dictionary
-      if options[:dictionary_access] == :method
-        "Slim::Wrapper.new(#{options[:dictionary]})"
-      else
-        options[:dictionary]
       end
     end
   end
